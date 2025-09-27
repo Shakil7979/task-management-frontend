@@ -1,148 +1,107 @@
-# Task Manager (Laravel API + Vue SPA)
+# Task Manager Frontend (Vue 3 SPA + TailwindCSS)
 
-## 1️⃣ Project Overview
-Task Manager is a web application that allows users to add multiple tasks dynamically without reloading the page.  
+## Project Overview
 
-- Backend: Laravel REST API  
-- Frontend: Vue 3 SPA with TailwindCSS  
-- Notifications: Toastr for success/error messages  
+This is the **frontend SPA** for the Task Manager project.
 
-This project demonstrates:  
-- Multi-task insertion  
-- Validation  
-- Optimized execution using chunked database inserts  
-- SPA frontend
+* Built with **Vue 3** using **Vite**
+* Styling with **TailwindCSS**
+* **Axios** used for API requests to Laravel backend
+* **Toastr** notifications for success/error messages
 
----
-
-## 2️⃣ Table of Contents
-- Setup
-- Architecture
-- API Documentation
-- Frontend Integration
-- Scalability & Optimization
-<!-- - Video Demonstration -->
+It works with the Laravel API to dynamically add multiple tasks without page reload.
+Users can **add multiple tasks, remove tasks, and submit all tasks at once**, with validation and success/error notifications.
 
 ---
 
-## 3️⃣ Setup
+## Table of Contents
 
-### Backend (Laravel)
+* [Setup](#setup)
+* [Project Structure](#project-structure)
+* [Running the Project](#running-the-project)
+* [API Integration](#api-integration)
+* [Notes](#notes)
+
+---
+
+## Setup
+
 1. Clone repository:
-   git clone https://github.com/Shakil7979/task-management-api.git
-   cd task-management-api
+
+```bash
+git clone https://github.com/Shakil7979/task-management-frontend.git
+cd task-manager-frontend
+```
 
 2. Install dependencies:
-   composer install
 
-3. Create `.env` file:
-   cp .env.example .env
+```bash
+npm install
+```
 
-4. Configure database in `.env`:
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=task_manager
-   DB_USERNAME=root
-   DB_PASSWORD=
+3. Configure environment (optional):
 
-5. Run migrations:
-   php artisan migrate
+* If you need to set the API URL, create `.env` file in project root:
 
-6. Start backend server:
-   php artisan serve
+```
+VITE_API_URL=http://127.0.0.1:8000/api
+```
 
-### Frontend (Vue SPA)
-1. Navigate to frontend folder:
-   cd frontend
+4. Start development server:
 
-2. Install dependencies:
-   npm install
-
-3. Run development server:
-   npm run dev
-
-SPA will be available at http://localhost:5173
+```bash
+npm run dev
+```
 
 ---
 
-## 4️⃣ Architecture
+## Project Structure
 
-**Backend (Laravel)**
-- REST API with `/api/tasks` endpoint
-- Validation via `StoreMultipleTasksRequest`
-- Bulk insert with chunking (500 rows per chunk)
-- Transaction ensures atomic insert
-
-**Frontend (Vue SPA + Tailwind)**
-- Dynamic repeater form to add multiple tasks
-- Add/remove tasks without page reload
-- Axios for API calls
-- Toastr for notifications
-- Responsive UI using TailwindCSS
-
----
-
-## 5️⃣ API Documentation
-
-**POST /api/tasks**
-
-**Request Body (JSON):**
-{
-  "tasks": [
-    { "title": "Task 1", "description": "Description 1", "due_date": "2025-09-30" },
-    { "title": "Task 2", "description": "Description 2", "due_date": "2025-10-01" }
-  ]
-}
-
-**Success Response:**
-{
-  "status": "success",
-  "message": "2 tasks created successfully"
-}
-
-**Validation Error Response:**
-{
-  "message": "The tasks.1.title field is required.",
-  "errors": {
-    "tasks.1.title": ["Each task must have a title."]
-  }
-}
+```
+task-manager-frontend/
+├─ public/
+│  └─ index.html
+├─ src/
+│  ├─ assets/          # Images, CSS, static assets
+│  ├─ components/
+│  │  └─ TaskComponent.vue  # Handles task form, repeater, and API calls
+│  ├─ App.vue           # Main SPA container
+│  └─ main.js           # Mounts Vue app, registers Toastr globally
+├─ package.json
+└─ tailwind.config.js
+```
 
 ---
 
-## 6️⃣ Frontend Integration
+## Running the Project
 
-- Import `TaskComponent.vue` in `App.vue`  
-- Use component: `<TaskComponent />`  
-- Axios posts to `/api/tasks`  
-- Toastr for notifications:
-  - Success: `window.$toastr.success(...)`
-  - Validation Error: `window.$toastr.error(...)`  
-- Dynamic repeater + reset form after success  
+* **Development mode (hot reload)**:
 
----
+```bash
+npm run dev
+```
 
-## 7️⃣ Scalability & Optimization
+* **Production build**:
 
-**Database Optimization**
-- Bulk insert in chunks
-- Transaction ensures atomic insertion
-- Fewer queries for large datasets
-
-**Frontend Optimization**
-- SPA prevents full page reload
-- Async Axios requests
-- Toastr prevents DOM blocking on errors
-
-**Extensibility**
-- Add task categories, priorities
-- Backend handles large datasets efficiently
-- Frontend can easily extend to more SPA components
+```bash
+npm run build
+```
 
 ---
 
-## Author
-- Name: Sadbin
-- Role: Laravel & Vue Developer  
-- Contact: shakilcoding@gmail.com
+## API Integration
+
+* All API calls are made using **Axios**.
+* Example: `POST /tasks` to add multiple tasks.
+* **Validation rules:** All fields (`title`, `description`, `due_date`) are **required**.
+* Invalid fields are highlighted with **red border**, and a **single Toastr message** shows “Please fill all required fields.”
+* On success, Toastr shows the success message from API.
+
+---
+
+## Notes
+
+* Make sure **Laravel API** is running before submitting tasks.
+* TailwindCSS is used for styling, Toastr for notifications.
+* Dynamic task form allows **adding/removing multiple tasks** without page reload.
+* This frontend works as a **single-page application (SPA)**.
