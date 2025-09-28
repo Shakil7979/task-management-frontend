@@ -1,6 +1,5 @@
 <template>
-
-    <h2 class="text-3xl font-bold text-center mb-6">Task Manager</h2>
+  <h2 class="text-3xl font-bold text-center mb-3">Task Module </h2>
   <div class="min-h-screen bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Left Side: Task Form -->
     <div class="bg-white p-6 rounded shadow">
@@ -11,38 +10,38 @@
           <h2 class="font-semibold mb-2">Task {{ index + 1 }}</h2>
 
           <!-- Title -->
-          <div>
+          <div class="mb-2">
             <input
               type="text"
               v-model="task.title"
               placeholder="Task Title"
               :class="[
-                'w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 mb-2',
+                'w-full border px-3 py-2 rounded focus:outline-none focus:ring-2',
                 validationErrors[index]?.title ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-400'
               ]"
             />
-            <p v-if="validationErrors[index]?.title" class="text-red-600 text-sm mt-1">
+            <p v-if="validationErrors[index]?.title" class="text-red-600 text-sm mb-1">
               {{ validationErrors[index].title }}
             </p>
           </div>
 
           <!-- Description -->
-          <div>
+          <div class="mb-2">
             <textarea
               v-model="task.description"
               placeholder="Task Description"
               :class="[
-                'w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 mb-2',
+                'w-full border px-3 py-2 rounded focus:outline-none focus:ring-2',
                 validationErrors[index]?.description ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-400'
               ]"
             ></textarea>
-            <p v-if="validationErrors[index]?.description" class="text-red-600 text-sm mt-1">
+            <p v-if="validationErrors[index]?.description" class="text-red-600 text-sm mb-1">
               {{ validationErrors[index].description }}
             </p>
           </div>
 
           <!-- Due Date -->
-          <div>
+          <div class="mb-2">
             <input
               type="date"
               v-model="task.due_date"
@@ -51,7 +50,7 @@
                 validationErrors[index]?.due_date ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-400'
               ]"
             />
-            <p v-if="validationErrors[index]?.due_date" class="text-red-600 text-sm mt-1">
+            <p v-if="validationErrors[index]?.due_date" class="text-red-600 text-sm mb-1">
               {{ validationErrors[index].due_date }}
             </p>
           </div>
@@ -68,28 +67,38 @@
         </div>
 
         <!-- Add New Task -->
-        <button
-          type="button"
-          @click="addTask"
-          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add Another Task
-        </button>
+        <div class="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            @click="addTask"
+            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            + Add Another Task
+          </button>
 
-        <!-- Submit -->
-        <button
-          type="submit"
-          class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2"
-        >
-          Save All Tasks
-        </button>
+          <!-- Submit -->
+          <button
+            type="submit"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2 flex items-center justify-center"
+            :disabled="loadingSubmit"
+          >
+            <span v-if="loadingSubmit" class="loader mr-2"></span>
+            <span>{{ loadingSubmit ? 'Saving...' : 'Save All Tasks' }}</span>
+          </button>
+        </div>
       </form>
     </div>
 
     <!-- Right Side: Task List -->
-    <div class="bg-white p-6 rounded shadow">
+    <div class="bg-white p-6 rounded shadow min-h-[300px] flex flex-col">
       <h1 class="text-2xl font-bold mb-4">Task List</h1>
-      <table class="w-full border-collapse border">
+
+      <!-- Loader for table -->
+      <div v-if="loadingTasks" class="flex justify-center items-center flex-1">
+        <span class="loader w-8 h-8"></span>
+      </div>
+
+      <table v-else class="w-full border-collapse border">
         <thead>
           <tr class="bg-gray-100">
             <th class="border px-3 py-2">#</th>
@@ -122,10 +131,12 @@ import axios from 'axios'
 const { appContext } = getCurrentInstance()
 const $toastr = appContext.config.globalProperties.$toastr
 
-// Form tasks
+// States
 const tasks = ref([{ title: '', description: '', due_date: '' }])
 const validationErrors = ref([])
 const taskList = ref([])  
+const loadingTasks = ref(false)
+const loadingSubmit = ref(false)
 
 // Add task
 const addTask = () => {
@@ -139,19 +150,23 @@ const removeTask = (i) => {
   validationErrors.value.splice(i, 1)
 }
 
-// Fetch task list from backend
+// Fetch task list
 const getTasks = async () => {
+  loadingTasks.value = true
   try {
     const res = await axios.get('http://127.0.0.1:8000/api/tasks')
     taskList.value = res.data.tasks
   } catch (e) {
     console.error(e)
+  } finally {
+    loadingTasks.value = false
   }
 }
 
 // Submit tasks
 const submitTasks = async () => {
   validationErrors.value = []
+  loadingSubmit.value = true
 
   try {
     const res = await axios.post('http://127.0.0.1:8000/api/tasks', { tasks: tasks.value })
@@ -173,6 +188,8 @@ const submitTasks = async () => {
     } else {
       $toastr.error('Server error, please try again.', 'Error')
     }
+  } finally {
+    loadingSubmit.value = false
   }
 }
 
@@ -181,3 +198,18 @@ onMounted(() => {
   getTasks()
 })
 </script>
+
+<style scoped>
+.loader {
+  border: 3px solid #ddd;
+  border-top: 3px solid #4ade80; /* Green */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
